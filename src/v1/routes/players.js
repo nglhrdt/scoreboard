@@ -3,7 +3,7 @@ const router = express.Router();
 
 // POST /api/v1/players - Add a new player
 router.post('/', async (req, res) => {
-  const player = req.body; // Assuming body-parser middleware is used to parse JSON
+  const player = req.body;
   try {
     const result = await req.db.collection('players').insertOne(player);
     res.status(201).json({ message: 'Player added', playerId: result.insertedId });
