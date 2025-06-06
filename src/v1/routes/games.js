@@ -41,7 +41,7 @@ router.post('/:id/goals', async (req, res) => {
     const result = await req.db
       .collection('games')
       .findOneAndUpdate(
-        { _id: require('mongodb').ObjectId(id) },
+        { _id: new (require('mongodb').ObjectId)(id) },
         { $inc: { [updateField]: 1 } },
         { returnDocument: 'after' }
       );
