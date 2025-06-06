@@ -4,6 +4,8 @@ const router = express.Router();
 // POST /api/v1/games - Add a new game
 router.post('/', async (req, res) => {
   const game = req.body;
+  game.homeGoals = game.homeGoals || 0;
+  game.awayGoals = game.awayGoals || 0;
   try {
     const result = await req.db.collection('games').insertOne(game);
     res.status(201).json({ message: 'Game added', playerId: result.insertedId });
@@ -46,11 +48,11 @@ router.post('/:id/goals', async (req, res) => {
         { returnDocument: 'after' }
       );
 
-    if (!result.value) {
+    if (!result) {
       return res.status(404).json({ message: 'Game not found' });
     }
 
-    res.json({ message: `Goal added for ${team}`, game: result.value });
+    res.json(result);
   } catch (error) {
     console.error('Error adding goal:', error);
     res.status(500).json({ message: 'Error adding goal' });
