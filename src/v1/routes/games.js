@@ -24,4 +24,37 @@ router.get('/', async (req, res) => {
   }
 });
 
+/**
+ * POST /api/v1/games/:id/goals - Add a goal to a game
+ * Payload: { team: "home" | "away" }
+ */
+router.post('/:id/goals', async (req, res) => {
+  const { id } = req.params;
+  const { team } = req.body;
+
+  if (!team || !['home', 'away'].includes(team.toLowerCase())) {
+    return res.status(400).json({ message: 'Invalid team. Must be "home" or "away".' });
+  }
+
+  try {
+    const updateField = team.toLowerCase() === 'home' ? 'homeGoals' : 'awayGoals';
+    const result = await req.db
+      .collection('games')
+      .findOneAndUpdate(
+        { _id: require('mongodb').ObjectId(id) },
+        { $inc: { [updateField]: 1 } },
+        { returnDocument: 'after' }
+      );
+
+    if (!result.value) {
+      return res.status(404).json({ message: 'Game not found' });
+    }
+
+    res.json({ message: `Goal added for ${team}`, game: result.value });
+  } catch (error) {
+    console.error('Error adding goal:', error);
+    res.status(500).json({ message: 'Error adding goal' });
+  }
+});
+
 module.exports = router;
