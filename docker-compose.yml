@@ -1,0 +1,50 @@
+services:
+  scoreboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+    networks:
+      - web
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.scoreboard.rule=Host(`scoreboard.devilsoft.de`)"
+      - "traefik.http.services.scoreboard.loadbalancer.server.port=3000"
+      - "traefik.http.routers.scoreboard.entrypoints=websecure"
+      - "traefik.http.routers.scoreboard.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.scoreboard.tls=true"
+
+  db:
+    image: mongo:latest
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - web
+
+  traefik:
+    image: traefik:v3.3
+    networks:
+      - web
+    command:
+      - "--api.insecure=true"
+      - "--entryPoints.web.address=:80"
+      - "--entryPoints.websecure.address=:443"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.email=smn@nglhrdt.de"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/traefik/acme.json"
+    volumes:
+      - "traefik_letsencrypt:/traefik"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    ports:
+      - "80:80"
+      - "443:443"
+
+networks:
+  web:
+
+volumes:
+  mongo_data:
+  traefik_letsencrypt:
