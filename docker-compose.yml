@@ -7,7 +7,7 @@ services:
       - web
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.routers.scoreboard.rule=Host(`scoreboard.devilsoft.de`)'
+      - 'traefik.http.routers.scoreboard.rule=Host(`ENTER HOSTNAME HERE`)' # Replace with your actual hostname
       - 'traefik.http.services.scoreboard.loadbalancer.server.port=3000'
       - 'traefik.http.routers.scoreboard.entrypoints=websecure'
       - 'traefik.http.routers.scoreboard.tls.certresolver=letsencrypt'
@@ -31,7 +31,7 @@ services:
       - '--providers.docker=true'
       - '--providers.docker.exposedbydefault=false'
       - '--certificatesresolvers.letsencrypt.acme.tlschallenge=true'
-      - '--certificatesresolvers.letsencrypt.acme.email=smn@nglhrdt.de'
+      - '--certificatesresolvers.letsencrypt.acme.email=ENTER YOUR EMAIL HERE' # Replace with your actual email
       - '--certificatesresolvers.letsencrypt.acme.storage=/traefik/acme.json'
     volumes:
       - 'traefik_letsencrypt:/traefik'
