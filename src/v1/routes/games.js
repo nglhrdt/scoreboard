@@ -1,4 +1,6 @@
 import express from 'express';
+import { ObjectId } from 'mongodb';
+
 const router = express.Router();
 
 // POST /api/v1/games - Add a new game
@@ -42,11 +44,7 @@ router.post('/:id/goals', async (req, res) => {
     const updateField = team.toLowerCase() === 'home' ? 'homeGoals' : 'awayGoals';
     const result = await req.db
       .collection('games')
-      .findOneAndUpdate(
-        { _id: new (require('mongodb').ObjectId)(id) },
-        { $inc: { [updateField]: 1 } },
-        { returnDocument: 'after' }
-      );
+      .findOneAndUpdate({ _id: new ObjectId(id) }, { $inc: { [updateField]: 1 } }, { returnDocument: 'after' });
 
     if (!result) {
       return res.status(404).json({ message: 'Game not found' });
