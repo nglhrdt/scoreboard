@@ -13,6 +13,24 @@ services:
       - 'traefik.http.routers.scoreboard.tls.certresolver=letsencrypt'
       - 'traefik.http.routers.scoreboard.tls=true'
 
+  mosquitto:
+    image: eclipse-mosquitto:latest
+    restart: unless-stopped
+    networks:
+      - web
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_log:/mosquitto/log
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.tcp.routers.mqtt.rule=HostSNI(`mqtt.ENTER_HOSTNAME_HERE`)' # Replace with your MQTT hostname (e.g., mqtt.yourdomain.com)
+      - 'traefik.tcp.routers.mqtt.entrypoints=mqttsecure'
+      - 'traefik.tcp.routers.mqtt.service=mosquitto_svc'
+      - 'traefik.tcp.routers.mqtt.tls=true'
+      - 'traefik.tcp.routers.mqtt.tls.certresolver=letsencrypt'
+      - 'traefik.tcp.services.mosquitto_svc.loadbalancer.server.port=1883' # Mosquitto's internal non-TLS port
+
   db:
     image: mongo:latest
     volumes:
@@ -28,6 +46,7 @@ services:
       - '--api.insecure=true'
       - '--entryPoints.web.address=:80'
       - '--entryPoints.websecure.address=:443'
+      - '--entrypoints.mqttsecure.address=:8883' # New entrypoint for MQTT TLS
       - '--providers.docker=true'
       - '--providers.docker.exposedbydefault=false'
       - '--certificatesresolvers.letsencrypt.acme.tlschallenge=true'
@@ -39,6 +58,7 @@ services:
     ports:
       - '80:80'
       - '443:443'
+      - '8883:8883' # Expose MQTT TLS port
 
 networks:
   web:
@@ -46,3 +66,6 @@ networks:
 volumes:
   mongo_data:
   traefik_letsencrypt:
+  mosquitto_conf: # Although defined via bind mount, can be listed here for clarity or if switched later
+  mosquitto_data:
+  mosquitto_log:
