@@ -1,6 +1,6 @@
-const express = require('express');
-const { MongoClient } = require('mongodb');
-const v1Routes = require('./v1/routes');
+import express from 'express';
+import { MongoClient } from 'mongodb';
+import v1Routes from './v1/routes/index.js';
 
 const app = express();
 app.use(express.json());

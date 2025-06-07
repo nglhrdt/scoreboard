@@ -1,4 +1,5 @@
-const express = require('express');
+import express from 'express';
+
 const router = express.Router();
 
 // POST /api/v1/players - Add a new player
@@ -24,4 +25,4 @@ router.get('/', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;
