@@ -1,12 +1,13 @@
 {
   "name": "score-board",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon src/index.js",
     "start": "node src/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "nodemon src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "release": "npm version patch -m \"chore(release): %s\" && git push --follow-tags"
   },
   "keywords": [],
   "author": "",
