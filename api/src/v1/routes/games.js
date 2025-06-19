@@ -6,8 +6,6 @@ const router = express.Router();
 // POST /api/v1/games - Add a new game
 router.post('/', async (req, res) => {
   const game = req.body;
-  game.homeGoals = game.homeGoals || 0;
-  game.awayGoals = game.awayGoals || 0;
   try {
     const result = await req.db.collection('games').insertOne(game);
     res.status(201).json({ message: 'Game added', playerId: result.insertedId });
@@ -29,27 +27,17 @@ router.get('/', async (req, res) => {
 });
 
 /**
- * POST /api/v1/games/:id/goals - Add a goal to a game
+ * PUT /api/v1/games/:id - Add a goal to a game
  * Payload: { team: "home" | "away" }
  */
-router.post('/:id/goals', async (req, res) => {
+router.put('/:id', async (req, res) => {
   const { id } = req.params;
-  const { team } = req.body;
-
-  if (!team || !['home', 'away'].includes(team.toLowerCase())) {
-    return res.status(400).json({ message: 'Invalid team. Must be "home" or "away".' });
-  }
+  const game = req.body;
 
   try {
-    const updateField = team.toLowerCase() === 'home' ? 'homeGoals' : 'awayGoals';
     const result = await req.db
       .collection('games')
-      .findOneAndUpdate({ _id: new ObjectId(id) }, { $inc: { [updateField]: 1 } }, { returnDocument: 'after' });
-
-    if (!result) {
-      return res.status(404).json({ message: 'Game not found' });
-    }
-
+      .findOneAndUpdate({ _id: new ObjectId(id) }, { $set: game }, { returnDocument: 'after' });
     res.json(result);
   } catch (error) {
     console.error('Error adding goal:', error);

@@ -1,85 +1,122 @@
 #include <Arduino.h>
+#include <ESP8266WiFi.h>
+#include <PubSubClient.h>
+#include <WiFiClientSecure.h>
+#include "config.h"
 
-const int trigPin = 5;
-const int echoPin = 14;
+#define HOME_TEAM_GOAL_SENSOR D1
+#define AWAY_TEAM_GOAL_SENSOR D2
 
-int score = 0;
+int sensorStateHome = 0, lastStateHome = 0, sensorStateAway = 0, lastStateAway = 0;
 
-#define NOISE_REDUCTION_ARRAY_SIZE 16
+const char *mqtt_server = "mqtt.devilsoft.de";
+const int mqtt_port = 8883;
 
-long duration;
+const char *tableName = "ads_1";
 
-bool isGoal = false;
+WiFiClientSecure espClientSecure;
+PubSubClient client(espClientSecure);
 
-float noiseReductionArray[NOISE_REDUCTION_ARRAY_SIZE];
-int reductionArrayIndex = 0;
-bool noiseFilled = false;
-
-void storeNoise(float value)
+void callback(char *topic, byte *payload, unsigned int length)
 {
-  noiseReductionArray[reductionArrayIndex] = value;
-  reductionArrayIndex = (reductionArrayIndex + 1) % NOISE_REDUCTION_ARRAY_SIZE;
-  if (reductionArrayIndex == 0)
-    noiseFilled = true;
+  Serial.print("Message arrived [");
+  Serial.print(topic);
+  Serial.print("] ");
+  for (int i = 0; i < length; i++)
+  {
+    Serial.print((char)payload[i]);
+  }
+  Serial.println();
 }
 
-float meanValue()
+void reconnect()
 {
-  int count = noiseFilled ? NOISE_REDUCTION_ARRAY_SIZE : reductionArrayIndex;
-  if (count == 0)
-    return 0.0;
-  float sum = 0.0;
-  for (int i = 0; i < count; ++i)
+  // Loop until we're reconnected
+  while (!client.connected())
   {
-    sum += noiseReductionArray[i];
+    Serial.print("Attempting MQTT connection...");
+    // Attempt to connect
+    if (client.connect("ESP8266Client"))
+    {
+      Serial.println("connected");
+      // Publish
+      client.publish("/presence", tableName);
+    }
+    else
+    {
+      Serial.print("failed, rc=");
+      Serial.print(client.state());
+      Serial.println(" try again in 5 seconds");
+      // Wait 5 seconds before retrying
+      delay(5000);
+    }
   }
-  return sum / count;
+}
+
+void setup_wifi()
+{
+  delay(10);
+  // We start by connecting to a WiFi network
+  Serial.println();
+  Serial.print("Connecting to ");
+  Serial.println(ssid);
+
+  WiFi.begin(ssid, password);
+
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println("");
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+}
+
+void setup_goal_sensors()
+{
+  // initialize the sensor pin as an input:
+  pinMode(HOME_TEAM_GOAL_SENSOR, INPUT_PULLUP);
 }
 
 void setup()
 {
-  Serial.begin(9600);       // Starts the serial communication
-  pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
-  pinMode(echoPin, INPUT);  // Sets the echoPin as an Input
-  Serial.println("Ultrasonic Sensor Goal Detection Initialized");
+  Serial.begin(9600);
+  setup_wifi();
+  setup_goal_sensors();
+  espClientSecure.setInsecure(); // For this example, we'll allow insecure connections
+  client.setServer(mqtt_server, mqtt_port);
+  client.setCallback(callback);
 }
 
 void loop()
 {
-  // Clears the trigPin
-  digitalWrite(trigPin, LOW);
-  delayMicroseconds(2);
-  // Sets the trigPin on HIGH state for 10 micro seconds
-  digitalWrite(trigPin, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trigPin, LOW);
+  if (!client.connected())
+  {
+    reconnect();
+  }
+  client.loop();
 
-  // Reads the echoPin, returns the sound wave travel time in microseconds
-  duration = pulseIn(echoPin, HIGH);
+  sensorStateHome = digitalRead(HOME_TEAM_GOAL_SENSOR);
 
-  Serial.print("Duration: ");
-  Serial.print(duration);
-  Serial.print(" mean, ");
-  Serial.println(meanValue());
+  if (!sensorStateHome && lastStateHome)
+  {
+    Serial.println("Goal detected!");
+    String topic = "/table/" + String(tableName) + "/goal";
+    client.publish(topic.c_str(), "HOME");
+  }
+  lastStateHome = sensorStateHome;
 
-  delay(100); // Delay to avoid flooding the serial output
+  sensorStateAway = digitalRead(AWAY_TEAM_GOAL_SENSOR);
 
-  // storeNoise(duration);
-
-  // float mean = meanValue();
-  // if (mean > 0 && fabs(duration - mean) / mean > 0.1)
-  // {
-  //   if (!isGoal)
-  //   {
-  //     ++score;
-  //     Serial.println("GOAAAAAL");
-  //     Serial.println(String(score) + ":0");
-  //     isGoal = true;
-  //     delay(1000); // Delay to avoid multiple prints for the same goal
-  //   }
-  // }
-  // else if (isGoal)
-  // {
-  //   isGoal = false;
-  // }
+  if (!sensorStateAway && lastStateAway)
+  {
+    Serial.println("Goal detected!");
+    String topic = "/table/" + String(tableName) + "/goal";
+    client.publish(topic.c_str(), "AWAY");
+    ;
+  }
+  lastStateAway = sensorStateAway;
 }
