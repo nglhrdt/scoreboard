@@ -1,11 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import type { FC } from "react";
 
-interface BoardProps {
-  data?: unknown;
-}
-
-const Board: FC<BoardProps> = () => {
+const Board: FC = () => {
   const { data } = useQuery({
     queryKey: ["lastGame"],
     queryFn: async () => {
@@ -15,7 +11,7 @@ const Board: FC<BoardProps> = () => {
       if (!res.ok) throw new Error("Network response was not ok");
       return res.json();
     },
-    refetchInterval: 1000,
+    refetchInterval: 60000,
   });
 
   return (
