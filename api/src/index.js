@@ -1,4 +1,3 @@
-import cors from 'cors';
 import express from 'express';
 import { MongoClient } from 'mongodb';
 import v1Routes from './v1/routes/index.js';
@@ -6,7 +5,6 @@ import v1Routes from './v1/routes/index.js';
 const app = express();
 app.use(express.json());
 const port = 3000;
-app.use(cors({ origin: '*' }));
 
 // MongoDB connection URL - read from environment variable with fallback
 const mongoUrl = process.env.MONGO_URL || 'mongodb://db:27017';
