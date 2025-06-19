@@ -7,7 +7,7 @@ services:
       - web
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.routers.scoreboard.rule=Host(`ENTER HOSTNAME HERE`)' # Replace with your actual hostname
+      - 'traefik.http.routers.scoreboard.rule=Host(`scoreboard.${HOSTNAME}`)' # Set SCOREBOARD_HOSTNAME in your environment or .env file
       - 'traefik.http.services.scoreboard.loadbalancer.server.port=3000'
       - 'traefik.http.routers.scoreboard.entrypoints=websecure'
       - 'traefik.http.routers.scoreboard.tls.certresolver=letsencrypt'
@@ -28,13 +28,13 @@ services:
       - mosquitto_log:/mosquitto/log
     labels:
       - 'traefik.enable=true'
-      - 'traefik.tcp.routers.mqtt.rule=HostSNI(`mqtt.ENTER_HOSTNAME_HERE`)' # Replace with your MQTT hostname (e.g., mqtt.yourdomain.com)
+      - 'traefik.tcp.routers.mqtt.rule=HostSNI(`mqtt.${HOSTNAME}``)' # Replace with your MQTT hostname (e.g., mqtt.yourdomain.com)
       - 'traefik.tcp.routers.mqtt.entrypoints=mqttsecure'
       - 'traefik.tcp.routers.mqtt.service=mosquitto_svc'
       - 'traefik.tcp.routers.mqtt.tls=true'
       - 'traefik.tcp.routers.mqtt.tls.certresolver=letsencrypt'
       - 'traefik.tcp.services.mosquitto_svc.loadbalancer.server.port=1883' # Mosquitto's internal non-TLS port
-      - 'traefik.tcp.routers.mqttws.rule=HostSNI(`mqttws.ENTER_HOSTNAME_HERE`)' # Replace with your WebSocket MQTT hostname (e.g., mqttws.yourdomain.com)
+      - 'traefik.tcp.routers.mqttws.rule=HostSNI(`mqttws.${HOSTNAME}`)' # Replace with your WebSocket MQTT hostname (e.g., mqttws.yourdomain.com)
       - 'traefik.tcp.routers.mqttws.entrypoints=mqttws'
       - 'traefik.tcp.routers.mqttws.service=mosquitto_ws_svc'
       - 'traefik.tcp.routers.mqttws.tls=true'
@@ -61,7 +61,7 @@ services:
       - '--providers.docker=true'
       - '--providers.docker.exposedbydefault=false'
       - '--certificatesresolvers.letsencrypt.acme.tlschallenge=true'
-      - '--certificatesresolvers.letsencrypt.acme.email=ENTER YOUR EMAIL HERE' # Replace with your actual email
+      - '--certificatesresolvers.letsencrypt.acme.email=${LETSENCRYPT_EMAIL}' # Set LETSENCRYPT_EMAIL in your environment or .env file
       - '--certificatesresolvers.letsencrypt.acme.storage=/traefik/acme.json'
     volumes:
       - 'traefik_letsencrypt:/traefik'
