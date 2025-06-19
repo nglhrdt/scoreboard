@@ -34,12 +34,12 @@ services:
       - 'traefik.tcp.routers.mqtt.tls=true'
       - 'traefik.tcp.routers.mqtt.tls.certresolver=letsencrypt'
       - 'traefik.tcp.services.mosquitto_svc.loadbalancer.server.port=1883' # Mosquitto's internal non-TLS port
-      - 'traefik.tcp.routers.mqttws.rule=HostSNI(`mqttws.${HOSTNAME}`)' # Replace with your WebSocket MQTT hostname (e.g., mqttws.yourdomain.com)
-      - 'traefik.tcp.routers.mqttws.entrypoints=mqttws'
-      - 'traefik.tcp.routers.mqttws.service=mosquitto_ws_svc'
-      - 'traefik.tcp.routers.mqttws.tls=true'
-      - 'traefik.tcp.routers.mqttws.tls.certresolver=letsencrypt'
-      - 'traefik.tcp.services.mosquitto_ws_svc.loadbalancer.server.port=8084' # Mosquitto WebSocket port
+      - 'traefik.http.routers.mqttws.rule=Host(`mqttws.${HOSTNAME}`)' # Replace with your WebSocket MQTT hostname (e.g., mqttws.yourdomain.com)
+      - 'traefik.http.routers.mqttws.entrypoints=mqttws'
+      - 'traefik.http.routers.mqttws.service=mosquitto_ws_svc'
+      - 'traefik.http.routers.mqttws.tls=true'
+      - 'traefik.http.routers.mqttws.tls.certresolver=letsencrypt'
+      - 'traefik.http.services.mosquitto_ws_svc.loadbalancer.server.port=8084' # Mosquitto WebSocket port
 
   db:
     image: mongo:latest
