@@ -1,11 +1,14 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "./App.css";
-import { MqttProvider } from "./MqttProvider";
+import Board from "./Board";
+
+const queryClient = new QueryClient();
 
 function App() {
   return (
-    <MqttProvider>
-      <div style={{ fontSize: "25rem" }}>0:0</div>
-    </MqttProvider>
+    <QueryClientProvider client={queryClient}>
+      <Board />
+    </QueryClientProvider>
   );
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "score-board",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "main": "src/index.js",
   "type": "module",
   "scripts": {
@@ -14,6 +14,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "cors": "^2.8.5",
     "express": "^5.1.0",
     "mongodb": "^6.17.0"
   },
