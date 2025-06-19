@@ -39,7 +39,7 @@ services:
       - 'traefik.tcp.routers.mqttws.service=mosquitto_ws_svc'
       - 'traefik.tcp.routers.mqttws.tls=true'
       - 'traefik.tcp.routers.mqttws.tls.certresolver=letsencrypt'
-      - 'traefik.tcp.services.mosquitto_ws_svc.loadbalancer.server.port=8080' # Mosquitto WebSocket port
+      - 'traefik.tcp.services.mosquitto_ws_svc.loadbalancer.server.port=8083' # Mosquitto WebSocket port
 
   db:
     image: mongo:latest
@@ -57,6 +57,7 @@ services:
       - '--entryPoints.web.address=:80'
       - '--entryPoints.websecure.address=:443'
       - '--entrypoints.mqttsecure.address=:8883' # New entrypoint for MQTT TLS
+      - '--entrypoints.mqttws.address=:8083' # New entrypoint for MQTT WebSocket
       - '--providers.docker=true'
       - '--providers.docker.exposedbydefault=false'
       - '--certificatesresolvers.letsencrypt.acme.tlschallenge=true'
@@ -68,7 +69,8 @@ services:
     ports:
       - '80:80'
       - '443:443'
-      - '8883:8883' # Expose MQTT TLS port
+      - '8883:8883'
+      - '8083:8083'
 
 networks:
   web:
