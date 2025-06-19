@@ -28,7 +28,7 @@ services:
       - mosquitto_log:/mosquitto/log
     labels:
       - 'traefik.enable=true'
-      - 'traefik.tcp.routers.mqtt.rule=HostSNI(`mqtt.${HOSTNAME}``)' # Replace with your MQTT hostname (e.g., mqtt.yourdomain.com)
+      - 'traefik.tcp.routers.mqtt.rule=HostSNI(`mqtt.${HOSTNAME}`)' # Replace with your MQTT hostname (e.g., mqtt.yourdomain.com)
       - 'traefik.tcp.routers.mqtt.entrypoints=mqttsecure'
       - 'traefik.tcp.routers.mqtt.service=mosquitto_svc'
       - 'traefik.tcp.routers.mqtt.tls=true'
