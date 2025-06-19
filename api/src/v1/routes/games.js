@@ -45,4 +45,20 @@ router.put('/:id', async (req, res) => {
   }
 });
 
+/**
+ * GET /api/v1/games/last - Get the last added game
+ */
+router.get('/last', async (req, res) => {
+  try {
+    const lastGame = await req.db.collection('games').find().sort({ _id: -1 }).limit(1).toArray();
+    if (lastGame.length === 0) {
+      return res.status(404).json({ message: 'No games found' });
+    }
+    res.json(lastGame[0]);
+  } catch (error) {
+    console.error('Error fetching last game:', error);
+    res.status(500).json({ message: 'Error fetching last game' });
+  }
+});
+
 export default router;

@@ -34,8 +34,8 @@ client.on("connect", () => {
       })
         .then((res) => res.json())
         .then((data) => {
-          if (data && data.id) {
-            gameID = data.id;
+          if (data && data.gameID) {
+            gameID = data.gameID;
             console.log("New game ID:", gameID);
             client.publish("/table/ads_1/score", JSON.stringify(score));
           }
@@ -76,8 +76,8 @@ client.on("message", (topic, message) => {
     })
       .then((res) => res.json())
       .then((data) => {
-        if (data && data.id) {
-          gameID = data.id;
+        if (data && data.gameID) {
+          gameID = data.gameID;
           console.log("New game ID:", gameID);
           client.publish("/table/ads_1/score", JSON.stringify(score));
         }
