@@ -20,8 +20,10 @@ const Board: FC<BoardProps> = () => {
 
   return (
     <div>
-      <div style={{ fontSize: "25rem" }}>{data && JSON.stringify(data)}</div>
-      <button>Start</button>
+      <div style={{ fontSize: "25rem" }}>
+        {data && `${data.home}:${data.away}`}
+      </div>
+      <p>{data && data._id}</p>
     </div>
   );
 };

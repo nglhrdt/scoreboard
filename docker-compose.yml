@@ -12,6 +12,10 @@ services:
       - 'traefik.http.routers.scoreboard.entrypoints=websecure'
       - 'traefik.http.routers.scoreboard.tls.certresolver=letsencrypt'
       - 'traefik.http.routers.scoreboard.tls=true'
+      - 'traefik.http.routers.scoreboard.middlewares=scoreboard-cors@docker'
+      - 'traefik.http.middlewares.scoreboard-cors.headers.accesscontrolalloworiginlist=*'
+      - 'traefik.http.middlewares.scoreboard-cors.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE,OPTIONS'
+      - 'traefik.http.middlewares.scoreboard-cors.headers.accesscontrolallowheaders=*'
 
   mosquitto:
     image: eclipse-mosquitto:latest
@@ -30,6 +34,12 @@ services:
       - 'traefik.tcp.routers.mqtt.tls=true'
       - 'traefik.tcp.routers.mqtt.tls.certresolver=letsencrypt'
       - 'traefik.tcp.services.mosquitto_svc.loadbalancer.server.port=1883' # Mosquitto's internal non-TLS port
+      - 'traefik.tcp.routers.mqttws.rule=HostSNI(`mqttws.ENTER_HOSTNAME_HERE`)' # Replace with your WebSocket MQTT hostname (e.g., mqttws.yourdomain.com)
+      - 'traefik.tcp.routers.mqttws.entrypoints=mqttws'
+      - 'traefik.tcp.routers.mqttws.service=mosquitto_ws_svc'
+      - 'traefik.tcp.routers.mqttws.tls=true'
+      - 'traefik.tcp.routers.mqttws.tls.certresolver=letsencrypt'
+      - 'traefik.tcp.services.mosquitto_ws_svc.loadbalancer.server.port=8080' # Mosquitto WebSocket port
 
   db:
     image: mongo:latest
