@@ -8,7 +8,7 @@ router.post('/', async (req, res) => {
   const game = req.body;
   try {
     const result = await req.db.collection('games').insertOne(game);
-    res.status(201).json({ message: 'Game added', playerId: result.insertedId });
+    res.status(201).json({ gameID: result.insertedId });
   } catch (error) {
     console.error('Error adding game:', error);
     res.status(500).json({ message: 'Error adding game' });

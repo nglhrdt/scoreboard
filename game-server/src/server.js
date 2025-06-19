@@ -48,7 +48,6 @@ client.on("connect", () => {
 });
 
 client.on("message", (topic, message) => {
-  // message is Buffer
   if (topic === "/table/ads_1/goal") {
     const team = message.toString();
     if (team === "HOME") {
