@@ -1,92 +1,67 @@
 import mqtt from "mqtt"; // import namespace "mqtt"
-let client = mqtt.connect({
+import { getGame, handleGoal, handleReset, startGame } from "./game-manager.js"; // import game management functions
+
+const client = mqtt.connect({
   port: 8883,
   host: "mqtt.devilsoft.de",
   protocol: "mqtts",
 }); // create a client
 
-let gameID;
+const tables = ["ads_1"]; // TODO the tables should register
+const baseTopic = "table";
+const feature = ["goal", "reset"];
 
-const score = {
-  home: 0,
-  away: 0,
-};
+function publishScore(table) {
+  const game = getGame(table);
+  if (!game) {
+    console.error(`Game not found for table: ${table}`);
+    return;
+  }
+  const topic = `${baseTopic}/${table}/score`;
+  client.publish(topic, JSON.stringify(game.score), { qos: 1 });
+}
+
+function publishGame(table) {
+  startGame(table).then((game) => {
+    client.publish(`${baseTopic}/${table}/score`, JSON.stringify(game.score), {
+      qos: 1,
+      retain: true,
+    });
+    console.log(`Game started for table: ${table}`);
+  });
+}
 
 client.on("connect", () => {
-  client.subscribe("/table/ads_1/goal", (err) => {
-    if (!err) {
-      console.log("Subscribed to /table/ads_1/goal");
-    }
-  });
-  client.subscribe("/table/ads_1/reset", (err) => {
-    if (!err) {
-      console.log("Subscribed to /table/ads_1/reset");
-    }
-  });
-  client.subscribe("/table/ads_1/score", (err) => {
-    if (!err) {
-      console.log("Subscribed to /table/ads_1/score");
-      client.publish("/table/ads_1/score", JSON.stringify(score));
-      fetch("https://scoreboard.devilsoft.de/api/v1/games/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ home: 0, away: 0 }),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data && data.gameID) {
-            gameID = data.gameID;
-            console.log("New game ID:", gameID);
-            client.publish("/table/ads_1/score", JSON.stringify(score));
-          }
-        })
-        .catch((err) => {
-          console.error("Failed to create new game:", err);
-        });
-    }
+  tables.forEach((table) => {
+    publishGame(table); // Start the game for each table
+    feature.forEach((useCase) => {
+      const topic = `${baseTopic}/${table}/${useCase}`;
+      client.subscribe(topic, (err) => {
+        if (!err) {
+          console.log(`Subscribed to ${topic}`);
+        }
+      });
+    });
   });
 });
 
 client.on("message", (topic, message) => {
-  if (topic === "/table/ads_1/goal") {
-    const team = message.toString();
-    if (team === "HOME") {
-      score.home += 1;
-    } else if (team === "AWAY") {
-      score.away += 1;
-    }
-    if (gameID) {
-      fetch(`https://scoreboard.devilsoft.de/api/v1/games/${gameID}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(score),
-      }).catch((err) => {
-        console.error("Failed to update game score:", err);
-      });
-    }
-    client.publish("/table/ads_1/score", JSON.stringify(score));
-  } else if (topic === "/table/ads_1/reset") {
-    score.home = 0;
-    score.away = 0;
+  const [_, table, useCase] = topic.split("/");
 
-    fetch("https://scoreboard.devilsoft.de/api/v1/games/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ home: 0, away: 0 }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data && data.gameID) {
-          gameID = data.gameID;
-          console.log("New game ID:", gameID);
-          client.publish("/table/ads_1/score", JSON.stringify(score));
-        }
-      })
-      .catch((err) => {
-        console.error("Failed to create new game:", err);
+  switch (useCase) {
+    case "goal":
+      const team = message.toString();
+      handleGoal(table, team);
+      publishScore(table);
+      break;
+    case "reset":
+      handleReset(table).then(() => {
+        publishScore(table);
       });
-  } else if (topic === "/table/ads_1/score") {
-    console.log("Score Update:", message.toString());
+      break;
+    default:
+      console.log(`Unknown use case: ${useCase}`);
+      return;
   }
 });
 

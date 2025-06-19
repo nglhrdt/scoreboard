@@ -1,45 +1,61 @@
-import mqtt, { MqttClient } from 'mqtt';
-import { type FC, useEffect, useState } from 'react';
+import mqtt, { MqttClient } from "mqtt";
+import { type FC, useEffect, useState } from "react";
+
+type Game = {
+  home: number;
+  away: number;
+  gameID: string;
+};
 
 const MqttBoard: FC = () => {
   const [client, setClient] = useState<MqttClient | null>(null);
-  const [messages, setMessages] = useState<string[]>([]);
-  const [connectionStatus, setConnectionStatus] = useState('Disconnected');
-  const topic = 'scoreboard/messages'; // Define the topic
+  const [game, setGame] = useState<Game | null>(null);
+  const [connectionStatus, setConnectionStatus] = useState("Disconnected");
+  const topic = "table/ads_1/score"; // Define the topic
+
+  const gameToString = (game: Game | null): string => {
+    if (!game) return "No game data";
+    return `${game.home}:${game.away}`;
+  };
 
   useEffect(() => {
     const mqttClient = mqtt.connect({
       port: 8084,
-      host: 'mqttws.devilsoft.de',
-      protocol: 'wss',
+      host: "mqttws.devilsoft.de",
+      protocol: "wss",
     });
     setClient(mqttClient);
 
-    mqttClient.on('connect', () => {
-      setConnectionStatus('Connected');
+    mqttClient.on("connect", () => {
+      setConnectionStatus("Connected");
       mqttClient.subscribe(topic, (err) => {
         if (err) {
-          console.error('Subscribe error:', err);
+          console.error("Subscribe error:", err);
         }
       });
     });
 
-    mqttClient.on('message', (topic, payload) => {
+    mqttClient.on("message", (topic, payload) => {
       const message = payload.toString();
-      setMessages((prevMessages) => [...prevMessages, message]);
+      try {
+        console.log("Received message:", message);
+        setGame(JSON.parse(message));
+      } catch (error) {
+        console.error("Error parsing message:", error);
+      }
     });
 
-    mqttClient.on('error', (err) => {
-      console.error('Connection error: ', err);
+    mqttClient.on("error", (err) => {
+      console.error("Connection error: ", err);
       mqttClient.end();
     });
 
-    mqttClient.on('reconnect', () => {
-      setConnectionStatus('Reconnecting');
+    mqttClient.on("reconnect", () => {
+      setConnectionStatus("Reconnecting");
     });
 
-    mqttClient.on('close', () => {
-      setConnectionStatus('Disconnected');
+    mqttClient.on("close", () => {
+      setConnectionStatus("Disconnected");
     });
 
     return () => {
@@ -49,18 +65,13 @@ const MqttBoard: FC = () => {
     };
   }, []);
 
+  if (!client) {
+    return null;
+  }
+
   return (
     <div>
-      <h2>MQTT Board</h2>
-      <p>Connection Status: {connectionStatus}</p>
-      <div>
-        <h3>Messages:</h3>
-        <ul>
-          {messages.map((msg, index) => (
-            <li key={index}>{msg}</li>
-          ))}
-        </ul>
-      </div>
+      <div style={{ fontSize: "25rem" }}>{gameToString(game)}</div>
     </div>
   );
 };
