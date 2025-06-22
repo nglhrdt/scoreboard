@@ -15,7 +15,7 @@ const char *scoreTopic = "table/ads_1/score";
 const char *resetTopic = "table/ads_1/reset";
 
 // Button configuration
-#define BUTTON_PIN D7 // GPIO14 (D5 on NodeMCU) - safe general purpose pin
+#define BUTTON_PIN D4 // GPIO14 (D5 on NodeMCU) - safe general purpose pin
 bool lastButtonState = HIGH;
 bool currentButtonState = HIGH;
 unsigned long lastDebounceTime = 0;
