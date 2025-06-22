@@ -44,7 +44,7 @@ const MqttBoard: FC = () => {
     mqttClient.on("message", (topic, payload) => {
       const message = payload.toString();
       try {
-        console.log("Received message:", message);
+        console.log(`Received message: ${topic}` , message);
         setGame(JSON.parse(message));
       } catch (error) {
         console.error("Error parsing message:", error);

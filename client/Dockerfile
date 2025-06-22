@@ -1,19 +1,21 @@
 # Build stage
-FROM node:22-alpine as build
+FROM node:22-alpine AS build
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Copy package file
+COPY package.json ./
+
+COPY yarn.lock ./
 
 # Install dependencies
-RUN npm ci --only=production
+RUN yarn install --frozen-lockfile
 
 # Copy source code
 COPY . .
 
 # Build the application
-RUN npm run build
+RUN yarn build
 
 # Production stage
 FROM nginx:alpine
