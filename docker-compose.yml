@@ -54,6 +54,8 @@ services:
       - mosquitto
       - db
       - api
+    env_file:
+      - .env
     networks:
       - web
 
