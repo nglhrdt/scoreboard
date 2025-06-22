@@ -69,7 +69,6 @@ void callback(char *topic, byte *payload, unsigned int length)
     {
       homeScore = doc["score"]["home"];
       awayScore = doc["score"]["away"];
-      awayScore = doc["away"];
       lastScore = String(homeScore) + ":" + String(awayScore);
       displayNeedsUpdate = true;
     }

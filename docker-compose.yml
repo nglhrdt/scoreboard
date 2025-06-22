@@ -1,6 +1,7 @@
 services:
   api:
     image: ghcr.io/nglhrdt/scoreboard-api:latest
+    restart: unless-stopped
     depends_on:
       - db
     networks:
@@ -50,6 +51,7 @@ services:
 
   server:
     image: ghcr.io/nglhrdt/scoreboard-server:latest
+    restart: unless-stopped
     depends_on:
       - mosquitto
       - db

@@ -15,8 +15,8 @@ async function handleJoinPlayer(table, playerData) {
     console.error(`Game not found for table: ${table}`);
     return;
   }
-  if (!game.players.includes(playerData)) {
-    game.players.push(playerData);
+  if (!game.players.home.includes(playerData)) {
+    game.players.home.push(playerData);
     await updateGame(game);
     console.log(`Player ${playerData} joined game at table: ${table}`);
   } else {
