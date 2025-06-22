@@ -6,6 +6,8 @@
 #include <PubSubClient.h>
 #include <WiFiClientSecure.h>
 #include <ArduinoJson.h>
+#include <SPI.h>
+#include <MFRC522.h>
 #include "config.h"
 
 const char *mqtt_server = "mqtt.devilsoft.de";
@@ -13,9 +15,15 @@ const int mqtt_port = 8883;
 const char *tableName = "ads_1";
 const char *scoreTopic = "table/ads_1/score";
 const char *resetTopic = "table/ads_1/reset";
+const char *playerTopic = "table/ads_1/player";
+
+// RFID configuration
+#define RST_PIN D3 // Reset pin for RFID
+#define SS_PIN D8  // SDA/SS pin for RFID
+MFRC522 rfid(SS_PIN, RST_PIN);
 
 // Button configuration
-#define BUTTON_PIN D4 // GPIO14 (D5 on NodeMCU) - safe general purpose pin
+#define BUTTON_PIN D4 // GPIO2 (D4 on NodeMCU) - safe general purpose pin
 bool lastButtonState = HIGH;
 bool currentButtonState = HIGH;
 unsigned long lastDebounceTime = 0;
@@ -144,6 +152,11 @@ void setup()
 {
   Serial.begin(9600);
 
+  // Initialize SPI for RFID
+  SPI.begin();
+  rfid.PCD_Init();
+  Serial.println("RFID reader initialized");
+
   // Initialize button pin
   pinMode(BUTTON_PIN, INPUT_PULLUP);
 
@@ -172,6 +185,29 @@ void loop()
     reconnect();
   }
   client.loop();
+
+  // Check for RFID cards
+  if (rfid.PICC_IsNewCardPresent() && rfid.PICC_ReadCardSerial())
+  {
+    String cardID = "";
+    for (byte i = 0; i < rfid.uid.size; i++)
+    {
+      if (cardID.length() > 0)
+        cardID += ":";
+      cardID += String(rfid.uid.uidByte[i], HEX);
+    }
+    cardID.toUpperCase();
+
+    Serial.print("RFID Card detected: ");
+    Serial.println(cardID);
+
+    // Send card ID to MQTT
+    client.publish(playerTopic, cardID.c_str());
+
+    // Halt PICC to prevent multiple reads
+    rfid.PICC_HaltA();
+    rfid.PCD_StopCrypto1();
+  }
 
   // Handle button press with debouncing
   int reading = digitalRead(BUTTON_PIN);

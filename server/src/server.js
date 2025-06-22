@@ -14,7 +14,7 @@ const client = mqtt.connect({
 
 const tables = ["ads_1"]; // TODO the tables should register
 const baseTopic = "table";
-const feature = ["goal", "reset"];
+const feature = ["player", "goal", "reset"];
 
 function publishScore(table) {
   const game = getGame(table);
@@ -54,6 +54,19 @@ client.on("message", (topic, message) => {
   const [_, table, useCase] = topic.split("/");
 
   switch (useCase) {
+    case "player":
+      const playerData = JSON.parse(message.toString());
+      if (!playerData || !playerData.name) {
+        console.error("Invalid player data received:", playerData);
+        return;
+      }
+      const game = getGame(table);
+      if (!game) {
+        console.error(`Game not found for table: ${table}`);
+        return;
+      }
+      console.log(`Player joined: ${playerData.name} on table: ${table}`);
+      break;
     case "goal":
       const team = message.toString();
       handleGoal(table, team);
