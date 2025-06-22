@@ -13,7 +13,7 @@
 const char *mqtt_server = "mqtt.devilsoft.de";
 const int mqtt_port = 8883;
 const char *tableName = "ads_1";
-const char *scoreTopic = "table/ads_1/score";
+const char *gameTopic = "table/ads_1/game";
 const char *resetTopic = "table/ads_1/reset";
 const char *playerTopic = "table/ads_1/player";
 
@@ -59,7 +59,7 @@ void callback(char *topic, byte *payload, unsigned int length)
   Serial.println();
 
   // If this is a score message, update the display
-  if (String(topic) == scoreTopic)
+  if (String(topic) == gameTopic)
   {
     // Parse JSON message
     StaticJsonDocument<100> doc;
@@ -67,7 +67,8 @@ void callback(char *topic, byte *payload, unsigned int length)
 
     if (!error)
     {
-      homeScore = doc["home"];
+      homeScore = doc["score"]["home"];
+      awayScore = doc["score"]["away"];
       awayScore = doc["away"];
       lastScore = String(homeScore) + ":" + String(awayScore);
       displayNeedsUpdate = true;
@@ -91,7 +92,7 @@ void reconnect()
     {
       Serial.println("connected");
       // Subscribe to the score topic
-      client.subscribe(scoreTopic);
+      client.subscribe(gameTopic);
       // Publish
       client.publish("/presence", tableName);
     }

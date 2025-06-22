@@ -1,6 +1,12 @@
 import dotenv from "dotenv";
 import mqtt from "mqtt"; // import namespace "mqtt"
-import { getGame, handleGoal, handleReset, startGame } from "./game-manager.js"; // import game management functions
+import {
+  getGame,
+  handleGoal,
+  handleJoinPlayer,
+  handleReset,
+  startGame,
+} from "./game-manager.js"; // import game management functions
 
 dotenv.config();
 
@@ -16,29 +22,26 @@ const tables = ["ads_1"]; // TODO the tables should register
 const baseTopic = "table";
 const feature = ["player", "goal", "reset"];
 
-function publishScore(table) {
+function initGame(table) {
+  startGame(table).then((game) => {
+    publishGame(table);
+    console.log(`Game started for table: ${table}`);
+  });
+}
+
+function publishGame(table) {
   const game = getGame(table);
   if (!game) {
     console.error(`Game not found for table: ${table}`);
     return;
   }
-  const topic = `${baseTopic}/${table}/score`;
-  client.publish(topic, JSON.stringify(game.score), { qos: 1, retain: true });
-}
-
-function publishGame(table) {
-  startGame(table).then((game) => {
-    client.publish(`${baseTopic}/${table}/score`, JSON.stringify(game.score), {
-      qos: 1,
-      retain: true,
-    });
-    console.log(`Game started for table: ${table}`);
-  });
+  const topic = `${baseTopic}/${table}/game`;
+  client.publish(topic, JSON.stringify(game), { qos: 1, retain: true });
 }
 
 client.on("connect", () => {
   tables.forEach((table) => {
-    publishGame(table); // Start the game for each table
+    initGame(table); // Start the game for each table
     feature.forEach((useCase) => {
       const topic = `${baseTopic}/${table}/${useCase}`;
       client.subscribe(topic, (err) => {
@@ -65,16 +68,19 @@ client.on("message", (topic, message) => {
         console.error(`Game not found for table: ${table}`);
         return;
       }
-      console.log(`Player joined: ${playerData} on table: ${table}`);
+      handleJoinPlayer(table, playerData).then(() => {
+        publishGame(table);
+        console.log(`Player joined: ${playerData} on table: ${table}`);
+      });
       break;
     case "goal":
       const team = message.toString();
       handleGoal(table, team);
-      publishScore(table);
+      publishGame(table);
       break;
     case "reset":
       handleReset(table).then(() => {
-        publishScore(table);
+        publishGame(table);
       });
       break;
     default:

@@ -4,6 +4,10 @@ export async function createGame() {
       home: 0,
       away: 0,
     },
+    players: {
+      home: [],
+      away: [],
+    },
   };
 }
 

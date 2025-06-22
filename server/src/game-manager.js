@@ -6,6 +6,26 @@ function getGame(table) {
   return games.get(table);
 }
 
+async function handleJoinPlayer(table, playerData) {
+  console.log(
+    `Handling player join for table: ${table}, playerData: ${playerData}`
+  );
+  const game = getGame(table);
+  if (!game) {
+    console.error(`Game not found for table: ${table}`);
+    return;
+  }
+  if (!game.players.includes(playerData)) {
+    game.players.push(playerData);
+    await updateGame(game);
+    console.log(`Player ${playerData} joined game at table: ${table}`);
+  } else {
+    console.warn(
+      `Player ${playerData} already exists in game at table: ${table}`
+    );
+  }
+}
+
 async function handleGoal(table, team) {
   console.log(`Handling goal for table: ${table}, team: ${team}`);
   const game = getGame(table);
@@ -52,4 +72,4 @@ async function startGame(table) {
   return newGame;
 }
 
-export { getGame, handleGoal, handleReset, startGame };
+export { getGame, handleGoal, handleJoinPlayer, handleReset, startGame };
