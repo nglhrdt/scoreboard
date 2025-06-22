@@ -1,10 +1,15 @@
+import dotenv from "dotenv";
 import mqtt from "mqtt"; // import namespace "mqtt"
 import { getGame, handleGoal, handleReset, startGame } from "./game-manager.js"; // import game management functions
 
+dotenv.config();
+
 const client = mqtt.connect({
-  port: 8883,
-  host: "mqtt.devilsoft.de",
-  protocol: "mqtts",
+  port: process.env.MQTT_PORT,
+  host: process.env.MQTT_HOST,
+  protocol: process.env.MQTT_PROTOCOL,
+  username: process.env.MQTT_USERNAME,
+  password: process.env.MQTT_PASSWORD,
 }); // create a client
 
 const tables = ["ads_1"]; // TODO the tables should register

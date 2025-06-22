@@ -1,6 +1,6 @@
 services:
-  scoreboard:
-    image: ghcr.io/nglhrdt/scoreboard:latest
+  api:
+    image: ghcr.io/nglhrdt/scoreboard-api:latest
     depends_on:
       - db
     networks:
@@ -45,6 +45,15 @@ services:
     image: mongo:latest
     volumes:
       - mongo_data:/data/db
+    networks:
+      - web
+
+  server:
+    image: ghcr.io/nglhrdt/scoreboard-server:latest
+    depends_on:
+      - mosquitto
+      - db
+      - api
     networks:
       - web
 

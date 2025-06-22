@@ -27,13 +27,24 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build and push Docker image
+      - name: Build and push API Docker image
         uses: docker/build-push-action@v5
         with:
           context: ./api
           file: ./api/Dockerfile
           push: true
           tags: |
-            ghcr.io/nglhrdt/scoreboard:latest
-            ghcr.io/nglhrdt/scoreboard:${{ github.sha }}
+            ghcr.io/nglhrdt/scoreboard-api:latest
+            ghcr.io/nglhrdt/scoreboard-api:${{ github.sha }}
+          platforms: linux/amd64,linux/arm64
+
+      - name: Build and push Server Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./server
+          file: ./server/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/nglhrdt/scoreboard-server:latest
+            ghcr.io/nglhrdt/scoreboard-server:${{ github.sha }}
           platforms: linux/amd64,linux/arm64
