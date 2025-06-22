@@ -55,8 +55,8 @@ client.on("message", (topic, message) => {
 
   switch (useCase) {
     case "player":
-      const playerData = JSON.parse(message.toString());
-      if (!playerData || !playerData.name) {
+      const playerData = message.toString();
+      if (!playerData) {
         console.error("Invalid player data received:", playerData);
         return;
       }
@@ -65,7 +65,7 @@ client.on("message", (topic, message) => {
         console.error(`Game not found for table: ${table}`);
         return;
       }
-      console.log(`Player joined: ${playerData.name} on table: ${table}`);
+      console.log(`Player joined: ${playerData} on table: ${table}`);
       break;
     case "goal":
       const team = message.toString();
