@@ -18,7 +18,7 @@ function publishScore(table) {
     return;
   }
   const topic = `${baseTopic}/${table}/score`;
-  client.publish(topic, JSON.stringify(game.score), { qos: 1 });
+  client.publish(topic, JSON.stringify(game.score), { qos: 1, retain: true });
 }
 
 function publishGame(table) {

@@ -11,7 +11,6 @@ int sensorStateHome = 0, lastStateHome = 0, sensorStateAway = 0, lastStateAway =
 
 const char *mqtt_server = "mqtt.devilsoft.de";
 const int mqtt_port = 8883;
-
 const char *tableName = "ads_1";
 
 WiFiClientSecure espClientSecure;
