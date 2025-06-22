@@ -48,3 +48,14 @@ jobs:
             ghcr.io/nglhrdt/scoreboard-server:latest
             ghcr.io/nglhrdt/scoreboard-server:${{ github.sha }}
           platforms: linux/amd64,linux/arm64
+
+      - name: Build and push Client Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./client
+          file: ./client/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/nglhrdt/scoreboard-client:latest
+            ghcr.io/nglhrdt/scoreboard-client:${{ github.sha }}
+          platforms: linux/amd64,linux/arm64

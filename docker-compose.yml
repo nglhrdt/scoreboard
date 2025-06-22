@@ -8,7 +8,7 @@ services:
       - web
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.routers.scoreboard.rule=Host(`scoreboard.${HOSTNAME}`)' # Set SCOREBOARD_HOSTNAME in your environment or .env file
+      - 'traefik.http.routers.scoreboard.rule=Host(`api.scoreboard.${HOSTNAME}`)' # Set SCOREBOARD_HOSTNAME in your environment or .env file
       - 'traefik.http.services.scoreboard.loadbalancer.server.port=3000'
       - 'traefik.http.routers.scoreboard.entrypoints=websecure'
       - 'traefik.http.routers.scoreboard.tls.certresolver=letsencrypt'
@@ -17,6 +17,19 @@ services:
       - 'traefik.http.middlewares.scoreboard-cors.headers.accesscontrolalloworiginlist=*'
       - 'traefik.http.middlewares.scoreboard-cors.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE,OPTIONS'
       - 'traefik.http.middlewares.scoreboard-cors.headers.accesscontrolallowheaders=*'
+
+  client:
+    image: ghcr.io/nglhrdt/scoreboard-client:latest
+    restart: unless-stopped
+    networks:
+      - web
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.scoreboard-client.rule=Host(`scoreboard.${HOSTNAME}`)'
+      - 'traefik.http.services.scoreboard-client.loadbalancer.server.port=80'
+      - 'traefik.http.routers.scoreboard-client.entrypoints=websecure'
+      - 'traefik.http.routers.scoreboard-client.tls.certresolver=letsencrypt'
+      - 'traefik.http.routers.scoreboard-client.tls=true'
 
   mosquitto:
     image: eclipse-mosquitto:latest
