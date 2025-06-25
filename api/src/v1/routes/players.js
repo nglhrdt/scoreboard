@@ -1,8 +1,11 @@
 import express from 'express';
+import { ObjectId } from 'mongodb';
 
 const router = express.Router();
 
-// POST /api/v1/players - Add a new player
+/**
+ * POST /api/v1/players - Add a new player
+ */
 router.post('/', async (req, res) => {
   const player = req.body;
   try {
@@ -14,14 +17,39 @@ router.post('/', async (req, res) => {
   }
 });
 
-// GET /api/v1/players - Get all players
+/**
+ * GET /api/v1/players - Get all players or filter by cardID
+ */
 router.get('/', async (req, res) => {
   try {
-    const players = await req.db.collection('players').find().toArray();
+    const { cardID } = req.query;
+    let query = {};
+    if (cardID) {
+      query.cardID = cardID;
+    }
+    const players = await req.db.collection('players').find(query).toArray();
     res.json(players);
   } catch (error) {
     console.error('Error fetching players:', error);
     res.status(500).json({ message: 'Error fetching players' });
+  }
+});
+
+/**
+ * PUT /api/v1/players/:id - Update a player by ID
+ */
+router.put('/:id', async (req, res) => {
+  const { id } = req.params;
+  const update = req.body;
+  try {
+    const result = await req.db.collection('players').updateOne({ _id: new ObjectId(id) }, { $set: update });
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ message: 'Player not found' });
+    }
+    res.json({ message: 'Player updated' });
+  } catch (error) {
+    console.error('Error updating player:', error);
+    res.status(500).json({ message: 'Error updating player' });
   }
 });
 
