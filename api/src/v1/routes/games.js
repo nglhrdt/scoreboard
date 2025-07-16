@@ -1,5 +1,6 @@
 import express from 'express';
 import { ObjectId } from 'mongodb';
+import database from '../../db/database.js';
 
 const router = express.Router();
 
@@ -7,7 +8,7 @@ const router = express.Router();
 router.post('/', async (req, res) => {
   const game = req.body;
   try {
-    const result = await req.db.collection('games').insertOne(game);
+    const result = await database.getCollection('games').insertOne(game);
     res.status(201).json({ gameID: result.insertedId });
   } catch (error) {
     console.error('Error adding game:', error);
@@ -18,7 +19,7 @@ router.post('/', async (req, res) => {
 // GET /api/v1/games - Get all games
 router.get('/', async (req, res) => {
   try {
-    const games = await req.db.collection('games').find().toArray();
+    const games = await database.getCollection('games').find().toArray();
     res.json(games);
   } catch (error) {
     console.error('Error fetching games:', error);
@@ -35,8 +36,8 @@ router.put('/:id', async (req, res) => {
   const game = req.body;
 
   try {
-    const result = await req.db
-      .collection('games')
+    const result = await database
+      .getCollection('games')
       .findOneAndUpdate({ _id: new ObjectId(id) }, { $set: game }, { returnDocument: 'after' });
     res.json(result);
   } catch (error) {
@@ -50,7 +51,7 @@ router.put('/:id', async (req, res) => {
  */
 router.get('/last', async (req, res) => {
   try {
-    const lastGame = await req.db.collection('games').find().sort({ _id: -1 }).limit(1).toArray();
+    const lastGame = await database.getCollection('games').find().sort({ _id: -1 }).limit(1).toArray();
     if (lastGame.length === 0) {
       return res.status(404).json({ message: 'No games found' });
     }

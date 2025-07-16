@@ -1,5 +1,6 @@
 import express from 'express';
 import pkg from '../../../package.json' with { type: 'json' };
+import database from '../../db/database.js';
 
 const router = express.Router();
 
@@ -9,7 +10,7 @@ router.get('/', (req, res) => {
     version: pkg.version,
     timestamp: new Date().toISOString(),
     status: 'success',
-    database: req.db ? 'connected' : 'disconnected',
+    database: database.isReady() ? 'connected' : 'disconnected',
   };
   res.json(response);
 });

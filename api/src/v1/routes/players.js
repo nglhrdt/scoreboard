@@ -1,5 +1,6 @@
 import express from 'express';
 import { ObjectId } from 'mongodb';
+import database from '../../db/database.js';
 
 const router = express.Router();
 
@@ -9,7 +10,7 @@ const router = express.Router();
 router.post('/', async (req, res) => {
   const player = req.body;
   try {
-    const result = await req.db.collection('players').insertOne(player);
+    const result = await database.getCollection('players').insertOne(player);
     res.status(201).json({ message: 'Player added', playerId: result.insertedId });
   } catch (error) {
     console.error('Error adding player:', error);
@@ -27,7 +28,7 @@ router.get('/', async (req, res) => {
     if (cardID) {
       query.cardID = cardID;
     }
-    const players = await req.db.collection('players').find(query).toArray();
+    const players = await database.getCollection('players').find(query).toArray();
     res.json(players);
   } catch (error) {
     console.error('Error fetching players:', error);
@@ -42,7 +43,7 @@ router.put('/:id', async (req, res) => {
   const { id } = req.params;
   const update = req.body;
   try {
-    const result = await req.db.collection('players').updateOne({ _id: new ObjectId(id) }, { $set: update });
+    const result = await database.getCollection('players').updateOne({ _id: new ObjectId(id) }, { $set: update });
     if (result.matchedCount === 0) {
       return res.status(404).json({ message: 'Player not found' });
     }
