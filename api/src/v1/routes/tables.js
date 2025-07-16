@@ -22,7 +22,9 @@ router.post('/', async (req, res) => {
  */
 router.get('/', async (req, res) => {
   try {
-    const tables = await req.db.collection('tables').find({}).toArray();
+    const { name } = req.query;
+    const query = name ? { name } : {};
+    const tables = await req.db.collection('tables').find(query).toArray();
     res.json(tables);
   } catch (error) {
     console.error('Error fetching tables:', error);
