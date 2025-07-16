@@ -21,6 +21,17 @@ router.get('/:tableID/active-game', async (req, res) => {
   }
 });
 
+router.post('/:id/game', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const newGame = await gameService.createGame(id);
+    res.status(201).json(newGame);
+  } catch (error) {
+    console.error('Error creating game:', error);
+    res.status(500).json({ message: 'Error creating game' });
+  }
+});
+
 /**
  * POST /api/v1/tables - Add a new table
  */

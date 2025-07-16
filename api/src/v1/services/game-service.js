@@ -7,7 +7,9 @@ async function createGame(tableID) {
     createdAt: new Date(),
     status: 'active',
     type: 'tableSoccer',
-    players: [],
+    mode: 'normal',
+    homeTeam: { score: 0, players: [] },
+    awayTeam: { score: 0, players: [] },
   };
   const insertResult = await database.getCollection('games').insertOne(newGame);
 
@@ -18,7 +20,7 @@ async function getActiveGame(tableID) {
   const games = await database
     .getCollection('games')
     .find({ tableID: new ObjectId(tableID) })
-    .sort({ createdAt: -1 })
+    .sort({ createdAt: 1 })
     .limit(1)
     .toArray();
 
