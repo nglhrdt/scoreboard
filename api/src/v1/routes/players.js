@@ -11,7 +11,7 @@ router.post('/', async (req, res) => {
   const player = req.body;
   try {
     const result = await database.getCollection('players').insertOne(player);
-    res.status(201).json({ message: 'Player added', playerId: result.insertedId });
+    res.status(201).json({ ...player, _id: result.insertedId });
   } catch (error) {
     console.error('Error adding player:', error);
     res.status(500).json({ message: 'Error adding player' });

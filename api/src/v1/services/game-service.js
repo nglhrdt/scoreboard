@@ -17,12 +17,7 @@ async function createGame(tableID) {
 }
 
 async function getActiveGame(tableID) {
-  const games = await database
-    .getCollection('games')
-    .find({ tableID: new ObjectId(tableID) })
-    .sort({ createdAt: 1 })
-    .limit(1)
-    .toArray();
+  const games = await database.getCollection('games').find({ tableID }).sort({ createdAt: -1 }).limit(1).toArray();
 
   const lastGame = games[0];
 
